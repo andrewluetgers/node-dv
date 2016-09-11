@@ -44,8 +44,11 @@ private:
     static NAN_METHOD(Subtract);
     static NAN_METHOD(Convolve);
     static NAN_METHOD(Unsharp);
+    static NAN_METHOD(SeedFill);
     static NAN_METHOD(Rotate);
     static NAN_METHOD(Scale);
+    static NAN_METHOD(ExpandBinaryPower2);
+    static NAN_METHOD(ReduceRankBinaryCascade);
     static NAN_METHOD(Crop);
     static NAN_METHOD(InRange);
     static NAN_METHOD(Histogram);
@@ -64,9 +67,12 @@ private:
     static NAN_METHOD(Dilate);
     static NAN_METHOD(Open);
     static NAN_METHOD(Close);
+    static NAN_METHOD(CloseSafe);
     static NAN_METHOD(Thin);
     static NAN_METHOD(MaxDynamicRange);
     static NAN_METHOD(OtsuAdaptiveThreshold);
+    static NAN_METHOD(MorphSequence);
+    static NAN_METHOD(MorphSequenceByComponent);
     static NAN_METHOD(LineSegments);
     static NAN_METHOD(FindSkew);
     static NAN_METHOD(ConnectedComponents);

@@ -7,16 +7,16 @@
  * MIT License <https://github.com/creatale/node-dv/blob/master/LICENSE>
  */
 #include "image.h"
-#include "util.h"
 #include <sstream>
 #include <algorithm>
 #include <cmath>
-#include <node_buffer.h>
-#include <lodepng.h>
-#include <jpgd.h>
-#include <jpge.h>
-#include <opencv2/core/core.hpp>
-#include <LSWMS.h>
+#include "util.h"
+#include "node_buffer.h"
+#include "lodepng.h"
+#include "jpgd.h"
+#include "jpge.h"
+#include "opencv2/core/core.hpp"
+#include "LSWMS.h"
 
 #ifdef _MSC_VER
 #if _MSC_VER <= 1700
@@ -206,8 +206,11 @@ NAN_MODULE_INIT(Image::Init)
 	Nan::SetPrototypeMethod(ctor, "subtract", Subtract);
     Nan::SetPrototypeMethod(ctor, "convolve", Convolve);
     Nan::SetPrototypeMethod(ctor, "unsharp", Unsharp);
+    Nan::SetPrototypeMethod(ctor, "seedFill", SeedFill);
     Nan::SetPrototypeMethod(ctor, "rotate", Rotate);
     Nan::SetPrototypeMethod(ctor, "scale", Scale);
+    Nan::SetPrototypeMethod(ctor, "expandBinaryPower2", ExpandBinaryPower2);
+    Nan::SetPrototypeMethod(ctor, "reduceRankBinaryCascade", ReduceRankBinaryCascade);
     Nan::SetPrototypeMethod(ctor, "crop", Crop);
     Nan::SetPrototypeMethod(ctor, "inRange", InRange);
     Nan::SetPrototypeMethod(ctor, "histogram", Histogram);
@@ -226,9 +229,12 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "dilate", Dilate);
     Nan::SetPrototypeMethod(ctor, "open", Open);
     Nan::SetPrototypeMethod(ctor, "close", Close);
+    Nan::SetPrototypeMethod(ctor, "closeSafe", CloseSafe);
     Nan::SetPrototypeMethod(ctor, "thin", Thin);
     Nan::SetPrototypeMethod(ctor, "maxDynamicRange", MaxDynamicRange);
     Nan::SetPrototypeMethod(ctor, "otsuAdaptiveThreshold", OtsuAdaptiveThreshold);
+    Nan::SetPrototypeMethod(ctor, "morphSequence", MorphSequence);
+    Nan::SetPrototypeMethod(ctor, "morphSequenceByComponent", MorphSequenceByComponent);
     Nan::SetPrototypeMethod(ctor, "lineSegments", LineSegments);
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
     Nan::SetPrototypeMethod(ctor, "connectedComponents", ConnectedComponents);
@@ -536,6 +542,28 @@ NAN_METHOD(Image::Unsharp)
     }
 }
 
+NAN_METHOD(Image::SeedFill)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
+    if (Image::HasInstance(info[0])) {
+        Pix *otherPix = Image::Pixels(info[0]->ToObject());
+        Pix *pixd;
+        int connectivity = info[1]->Int32Value();
+        if(obj->pix_->d >= 8) {
+			return Nan::ThrowTypeError("error while applying seed-fill should be a binary image");
+		} else {
+            pixd = pixSeedfillBinary(NULL, obj->pix_, otherPix, connectivity);
+        }
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while applying seed-fill");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (image: Image)");
+    }
+}
+
+
 NAN_METHOD(Image::Rotate)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
@@ -567,6 +595,39 @@ NAN_METHOD(Image::Scale)
         info.GetReturnValue().Set(Image::New(pixd));
     } else {
         return Nan::ThrowTypeError("expected (scaleX: Number, [scaleY: Number])");
+    }
+}
+
+NAN_METHOD(Image::ExpandBinaryPower2)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (info[0]->IsNumber()) {
+        int factor = info[0]->Int32Value();
+        Pix *pixd = pixExpandBinaryPower2(obj->pix_, factor);
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while expanding");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (factor: Int)");
+    }
+}
+
+NAN_METHOD(Image::ReduceRankBinaryCascade)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (info[0]->IsNumber() && info[1]->IsNumber() && info[2]->IsNumber() && info[3]->IsNumber()) {
+        int level1 = info[0]->Int32Value();
+        int level2 = info[1]->Int32Value();
+        int level3 = info[2]->Int32Value();
+        int level4 = info[3]->Int32Value();
+        Pix *pixd = pixReduceRankBinaryCascade(obj->pix_, level1, level2, level3, level4);
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while reducing");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (level1: Int, level2: Int, level3: Int, level4: Int)");
     }
 }
 
@@ -927,6 +988,27 @@ NAN_METHOD(Image::Close)
     }
 }
 
+NAN_METHOD(Image::CloseSafe)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
+    if (info[0]->IsNumber() && info[1]->IsNumber()) {
+        int width = static_cast<int>(ceil(info[0]->NumberValue()));
+        int height = static_cast<int>(ceil(info[1]->NumberValue()));
+        PIX *pixd = 0;
+        if (obj->pix_->d == 1) {
+            pixd = pixCloseSafeBrick(NULL, obj->pix_, width, height);
+        } else {
+            pixd = pixCloseGray(obj->pix_, width, height);
+        }
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while closing");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (width: Number, height: Number)");
+    }
+}
+
 NAN_METHOD(Image::Thin)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
@@ -992,9 +1074,7 @@ NAN_METHOD(Image::OtsuAdaptiveThreshold)
         float scorefact = static_cast<float>(info[4]->NumberValue());
         PIX *ppixth;
         PIX *ppixd;
-        int error = pixOtsuAdaptiveThreshold(
-                    obj->pix_, sx, sy, smoothx, smoothy,
-                    scorefact, &ppixth, &ppixd);
+        int error = pixOtsuAdaptiveThreshold(obj->pix_, sx, sy, smoothx, smoothy, scorefact, &ppixth, &ppixd);
         if (error == 0) {
             Local<Object> object = Nan::New<Object>();
             object->Set(Nan::New("thresholdValues").ToLocalChecked(), Image::New(ppixth));
@@ -1007,6 +1087,40 @@ NAN_METHOD(Image::OtsuAdaptiveThreshold)
     } else {
         return Nan::ThrowTypeError("expected (sx: Int32, sy: Int32, "
                      "smoothx: Int32, smoothy: Int32, scoreFact: Number)");
+    }
+}
+
+NAN_METHOD(Image::MorphSequence)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (info[0]->IsString() && info[1]->Int32Value()) {
+        String::Utf8Value sequence(info[0]->ToString());
+        int dispsep = info[1]->Int32Value();
+        Pix *pixd = pixMorphSequence(obj->pix_, (const char*)(*sequence), dispsep);
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while morphing");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (sequence: char, dispsep: Int32)");
+    }
+}
+
+NAN_METHOD(Image::MorphSequenceByComponent)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (info[0]->IsString() && info[1]->Int32Value() && info[2]->Int32Value() && info[3]->Int32Value()) {
+        String::Utf8Value sequence(info[0]->ToString());
+        int connectivity = info[1]->Int32Value();
+        int minw = info[2]->Int32Value();
+        int minh = info[3]->Int32Value();
+        Pix *pixd = pixMorphSequenceByComponent(obj->pix_, (const char*)(*sequence), connectivity, minw, minh, NULL);
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while morphing");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (sequence: char, dispsep: Int32)");
     }
 }
 
