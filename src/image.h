@@ -74,6 +74,7 @@ private:
     static NAN_METHOD(WolfAdaptiveThreshold);
     static NAN_METHOD(NickAdaptiveThreshold);
     static NAN_METHOD(MorphSequence);
+    static NAN_METHOD(MorphCompSequence);
     static NAN_METHOD(MorphSequenceByComponent);
     static NAN_METHOD(LineSegments);
     static NAN_METHOD(FindSkew);

@@ -248,6 +248,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "wolfAdaptiveThreshold", WolfAdaptiveThreshold);
     Nan::SetPrototypeMethod(ctor, "nickAdaptiveThreshold", NickAdaptiveThreshold);
     Nan::SetPrototypeMethod(ctor, "morphSequence", MorphSequence);
+    Nan::SetPrototypeMethod(ctor, "morphCompSequence", MorphCompSequence);
     Nan::SetPrototypeMethod(ctor, "morphSequenceByComponent", MorphSequenceByComponent);
     Nan::SetPrototypeMethod(ctor, "lineSegments", LineSegments);
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
@@ -1153,6 +1154,21 @@ NAN_METHOD(Image::MorphSequence)
         String::Utf8Value sequence(info[0]->ToString());
         int dispsep = info[1]->Int32Value();
         Pix *pixd = pixMorphSequence(obj->pix_, (const char*)(*sequence), dispsep);
+        if (pixd == NULL) {
+            return Nan::ThrowTypeError("error while morphing");
+        }
+        info.GetReturnValue().Set(Image::New(pixd));
+    } else {
+        return Nan::ThrowTypeError("expected (sequence: char, dispsep: Int32)");
+    }
+}
+NAN_METHOD(Image::MorphCompSequence)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+    if (info[0]->IsString() && info[1]->Int32Value()) {
+        String::Utf8Value sequence(info[0]->ToString());
+        int dispsep = info[1]->Int32Value();
+        Pix *pixd = pixMorphCompSequence(obj->pix_, (const char*)(*sequence), dispsep);
         if (pixd == NULL) {
             return Nan::ThrowTypeError("error while morphing");
         }
