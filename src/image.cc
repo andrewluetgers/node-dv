@@ -188,16 +188,16 @@ Pix *Image::Pixels(Local<Object> obj)
 }
 
 NAN_MODULE_INIT(Image::Init)
-{  
+{
     auto ctor = Nan::New<v8::FunctionTemplate>(New);
     auto ctorInst = ctor->InstanceTemplate();
     ctor->SetClassName(Nan::New("Image").ToLocalChecked());
     ctorInst->SetInternalFieldCount(1);
-    
+
     Nan::SetAccessor(ctorInst, Nan::New("width").ToLocalChecked(), GetWidth);
     Nan::SetAccessor(ctorInst, Nan::New("height").ToLocalChecked(), GetHeight);
     Nan::SetAccessor(ctorInst, Nan::New("depth").ToLocalChecked(), GetDepth);
-    
+
     Nan::SetPrototypeMethod(ctor, "invert", Invert);
     Nan::SetPrototypeMethod(ctor, "or", Or);
     Nan::SetPrototypeMethod(ctor, "and", And);
@@ -247,7 +247,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "drawImage", DrawImage);
     Nan::SetPrototypeMethod(ctor, "drawLine", DrawLine);
     Nan::SetPrototypeMethod(ctor, "toBuffer", ToBuffer);
-    
+
     constructor_template.Reset(ctor);
 
     Nan::Set(target, Nan::New("Image").ToLocalChecked(), Nan::GetFunction(ctor).ToLocalChecked());
@@ -270,7 +270,7 @@ NAN_METHOD(Image::New)
     if (!info.IsConstructCall()) {
         // [NOTE] generic recursive call with `new`
         std::vector<v8::Local<v8::Value>> args(info.Length());
-        for (std::size_t i = 0; i < args.size(); ++i) args[i] = info[i];        
+        for (std::size_t i = 0; i < args.size(); ++i) args[i] = info[i];
         auto inst = Nan::NewInstance(info.Callee(), args.size(), args.data());
         if (!inst.IsEmpty()) info.GetReturnValue().Set(inst.ToLocalChecked());
         return;
@@ -362,7 +362,7 @@ NAN_METHOD(Image::New)
                      "image: Buffer, [width: Int32, height: Int32])");
     }
     Image* obj = new Image(pix);
-    
+
     obj->Wrap(info.This());
 }
 
@@ -1261,7 +1261,7 @@ NAN_METHOD(Image::SelectBySize)
         else if (strcmp("both",   *typeS) == 0)     type = 4;
         else {
             std::stringstream msg;
-            msg << "invalid type '" << *type << "'";
+            msg << "invalid type '" << *typeS << "'";
             return Nan::ThrowError(msg.str().c_str());
         }
         
