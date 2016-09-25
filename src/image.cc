@@ -1094,7 +1094,7 @@ NAN_METHOD(Image::OtsuAdaptiveThreshold)
 NAN_METHOD(Image::MorphSequence)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    if (info[0]->IsString() && info[1]->Int32Value()) {
+    if (info[0]->IsString() && info[1]->IsInt32()) {
         String::Utf8Value sequence(info[0]->ToString());
         int dispsep = info[1]->Int32Value();
         Pix *pixd = pixMorphSequence(obj->pix_, (const char*)(*sequence), dispsep);
@@ -1109,7 +1109,7 @@ NAN_METHOD(Image::MorphSequence)
 NAN_METHOD(Image::MorphCompSequence)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    if (info[0]->IsString() && info[1]->Int32Value()) {
+    if (info[0]->IsString() && info[1]->IsInt32()) {
         String::Utf8Value sequence(info[0]->ToString());
         int dispsep = info[1]->Int32Value();
         Pix *pixd = pixMorphCompSequence(obj->pix_, (const char*)(*sequence), dispsep);
@@ -1125,7 +1125,7 @@ NAN_METHOD(Image::MorphCompSequence)
 NAN_METHOD(Image::MorphSequenceByComponent)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
-    if (info[0]->IsString() && info[1]->Int32Value() && info[2]->Int32Value() && info[3]->Int32Value()) {
+    if (info[0]->IsString() && info[1]->IsInt32() && info[2]->IsInt32() && info[3]->IsInt32()) {
         String::Utf8Value sequence(info[0]->ToString());
         int connectivity = info[1]->Int32Value();
         int minw = info[2]->Int32Value();
