@@ -72,6 +72,7 @@ private:
     static NAN_METHOD(MaxDynamicRange);
     static NAN_METHOD(OtsuAdaptiveThreshold);
     static NAN_METHOD(MorphSequence);
+    static NAN_METHOD(MorphCompSequence);
     static NAN_METHOD(MorphSequenceByComponent);
     static NAN_METHOD(LineSegments);
     static NAN_METHOD(FindSkew);
