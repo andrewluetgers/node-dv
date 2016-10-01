@@ -240,7 +240,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
     Nan::SetPrototypeMethod(ctor, "connectedComponents", ConnectedComponents);
     Nan::SetPrototypeMethod(ctor, "selectBySize", SelectBySize);
-    Nan::SetPrototypeMethod(ctor, "regions", regions);
+    Nan::SetPrototypeMethod(ctor, "regions", Regions);
     Nan::SetPrototypeMethod(ctor, "distanceFunction", DistanceFunction);
     Nan::SetPrototypeMethod(ctor, "clearBox", ClearBox);
     Nan::SetPrototypeMethod(ctor, "fillBox", FillBox);
