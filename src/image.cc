@@ -240,6 +240,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
     Nan::SetPrototypeMethod(ctor, "connectedComponents", ConnectedComponents);
     Nan::SetPrototypeMethod(ctor, "selectBySize", SelectBySize);
+    Nan::SetPrototypeMethod(ctor, "regions", regions);
     Nan::SetPrototypeMethod(ctor, "distanceFunction", DistanceFunction);
     Nan::SetPrototypeMethod(ctor, "clearBox", ClearBox);
     Nan::SetPrototypeMethod(ctor, "fillBox", FillBox);
@@ -1283,6 +1284,33 @@ NAN_METHOD(Image::SelectBySize)
     } else {
         return Nan::ThrowTypeError("expected (width: Int32, height: Int32, connectivity: Int32, type: char, relation: char)");
     }
+}
+
+NAN_METHOD(Image::Regions)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
+	PIX *pix = obj->pix_;
+	// If image is grayscale, binarize with fixed threshold
+	if (pix->d != 1) {
+		return Nan::ThrowTypeError("Not a 1bpp Image");
+	}
+
+	PIX *pixh = pixCreate(pix->w, pix->h, 1);
+	PIX *pixl = pixCreate(pix->w, pix->h, 1);
+	PIX *pixp = pixCreate(pix->w, pix->h, 1);
+
+	int error = pixGetRegionsBinary(pix, &pixh, &pixl, &pixp, 0);
+
+	if (error == 0) {
+		Local<Object> object = Nan::New<Object>();
+		object->Set(Nan::New("images").ToLocalChecked(), Image::New(pixh));
+		object->Set(Nan::New("lines").ToLocalChecked(), Image::New(pixl));
+		object->Set(Nan::New("paragraphs").ToLocalChecked(), Image::New(pixp));
+		info.GetReturnValue().Set(object);
+		return;
+	} else {
+		return Nan::ThrowError("error while computing regions");
+	}
 }
 
 NAN_METHOD(Image::DistanceFunction)

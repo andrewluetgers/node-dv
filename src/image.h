@@ -78,6 +78,7 @@ private:
     static NAN_METHOD(FindSkew);
     static NAN_METHOD(ConnectedComponents);
     static NAN_METHOD(SelectBySize);
+    static NAN_METHOD(Regions);
     static NAN_METHOD(DistanceFunction);
     static NAN_METHOD(ClearBox);
     static NAN_METHOD(FillBox);
