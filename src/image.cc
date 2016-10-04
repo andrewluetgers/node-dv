@@ -1351,29 +1351,20 @@ NAN_METHOD(Image::WhiteBlocks)
     int maxBoxes = 100;
     float overlap = 0.2;
 	int sort = 10;
-    String::Utf8Value sortS("area");
 
 	if (info[0]->IsObject()) {
 		Handle<Object> opts = Handle<Object>::Cast(info[0]);
-		Handle<Value> maxSizeV = opts->Get(String::New("maxSize"));
-		Handle<Value> sortV = opts->Get(String::New("sort"));
-		Handle<Value> boxesV = opts->Get(String::New("boxes"));
-		Handle<Value> overlapV = opts->Get(String::New("overlap"));
+		Handle<Value> maxSizeV = opts->Get(Nan::New("maxSize").ToLocalChecked());
+		Handle<Value> sortSV = opts->Get(Nan::New("sort").ToLocalChecked());
+		Handle<Value> boxesV = opts->Get(Nan::New("boxes").ToLocalChecked());
+		Handle<Value> overlapV = opts->Get(Nan::New("overlap").ToLocalChecked());
 
-		if (!maxSizeV->IsUndefined() && maxSizeV->IsInt32()) {
-			maxSize = maxSizeV->ToInt32();
-		}
+		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32() : maxSize;
+		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32() : maxBoxes;
+		overlap = overlapV->IsNumber() ? overlapV->ToNumber() : overlap;
 
-		if (!boxesV->IsUndefined() && boxesV->IsInt32()) {
-			maxBoxes = boxesV->ToInt32();
-		}
-
-		if (!overlapV->IsUndefined() && overlapV->IsNumber()) {
-			overlap = overlapV->ToNumber();
-		}
-
-		if (!sortSV->IsUndefined() && sortSV->IsString()) {
-			sortS = sortSV->ToString();
+		if (sortSV->IsString()) {
+			String::Utf8Value sortS = sortSV->ToString();
 			if      (strcmp("width",  		*sortS) == 0)     sort = 5;
 			else if (strcmp("height", 		*sortS) == 0)     sort = 6;
 			else if (strcmp("min", 			*sortS) == 0)     sort = 7;
