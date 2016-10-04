@@ -1354,10 +1354,10 @@ NAN_METHOD(Image::WhiteBlocks)
 
 	if (info[0]->IsObject()) {
 		Handle<Object> opts = Handle<Object>::Cast(info[0]);
-		Handle<Value> maxSizeV = opts->Get(Nan::New("maxSize").ToLocalChecked());
-		Handle<Value> sortSV = opts->Get(Nan::New("sort").ToLocalChecked());
-		Handle<Value> boxesV = opts->Get(Nan::New("boxes").ToLocalChecked());
-		Handle<Value> overlapV = opts->Get(Nan::New("overlap").ToLocalChecked());
+		Handle<Value> maxSizeV = opts->Get(Nan::New("maxSize"));
+		Handle<Value> sortSV = opts->Get(Nan::New("sort"));
+		Handle<Value> boxesV = opts->Get(Nan::New("boxes"));
+		Handle<Value> overlapV = opts->Get(Nan::New("overlap"));
 
 		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32() : maxSize;
 		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32() : maxBoxes;
