@@ -240,6 +240,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
     Nan::SetPrototypeMethod(ctor, "connectedComponents", ConnectedComponents);
     Nan::SetPrototypeMethod(ctor, "selectBySize", SelectBySize);
+    Nan::SetPrototypeMethod(ctor, "whiteBlocks", WhiteBlocks);
     Nan::SetPrototypeMethod(ctor, "regions", Regions);
     Nan::SetPrototypeMethod(ctor, "distanceFunction", DistanceFunction);
     Nan::SetPrototypeMethod(ctor, "clearBox", ClearBox);
@@ -1284,6 +1285,79 @@ NAN_METHOD(Image::SelectBySize)
     } else {
         return Nan::ThrowTypeError("expected (width: Int32, height: Int32, connectivity: Int32, type: char, relation: char)");
     }
+}
+
+NAN_METHOD(Image::WhiteBlocks)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
+	Pix *pixs = obj->pix_;
+    int maxSize = 500;
+    int maxBoxes = 100;
+    float overlap = 0.2;
+	int sort = 10;
+    String::Utf8Value sortS("area");
+
+	if (info[0]->IsObject()) {
+		Handle<Object> opts = Handle<Object>::Cast(info[0]);
+		Handle<Value> maxSizeV = opts->Get(String::New("maxSize"));
+		Handle<Value> sortV = opts->Get(String::New("sort"));
+		Handle<Value> boxesV = opts->Get(String::New("boxes"));
+		Handle<Value> overlapV = opts->Get(String::New("overlap"));
+
+		if (!maxSizeV->IsUndefined() && maxSizeV->IsInt32()) {
+			maxSize = maxSizeV->ToInt32();
+		}
+
+		if (!boxesV->IsUndefined() && boxesV->IsInt32()) {
+			maxBoxes = boxesV->ToInt32();
+		}
+
+		if (!overlapV->IsUndefined() && overlapV->IsNumber()) {
+			overlap = overlapV->ToNumber();
+		}
+
+		if (!sortSV->IsUndefined() && sortSV->IsString()) {
+			sortS = sortSV->ToString();
+			if      (strcmp("width",  		*sortS) == 0)     sort = 5;
+			else if (strcmp("height", 		*sortS) == 0)     sort = 6;
+			else if (strcmp("min", 			*sortS) == 0)     sort = 7;
+			else if (strcmp("max",   		*sortS) == 0)     sort = 8;
+			else if (strcmp("perimiter",   	*sortS) == 0)     sort = 9;
+			else if (strcmp("area",   		*sortS) == 0)     sort = 10;
+			else {
+				std::stringstream msg;
+				msg << "invalid sort '" << *sortS << "'";
+				return Nan::ThrowError(msg.str().c_str());
+			}
+		}
+	}
+
+	Box *box;
+	Boxa *boxa, *boxat, *boxad;
+
+//		l_int32 	w, h;
+//		l_float32	ovlap;
+
+	boxa = pixConnComp(pixs, NULL, 4);
+//		pixGetDimensions(pixs, &w, &h, NULL);
+//		box = boxCreate(0, 0, w, h);
+	boxaPermuteRandom(boxa, boxa);
+	boxat = boxaSelectBySize(boxa, maxSize, maxSize, L_SELECT_IF_BOTH, L_SELECT_IF_LT, NULL);
+	boxad = boxaGetWhiteblocks(boxat, NULL, sort, maxBoxes, overlap, 200, 0.15, 20000);
+
+	boxaDestroy(&boxa);
+	boxaDestroy(&boxat);
+
+	if (!boxad) {
+		return Nan::ThrowTypeError("error while getting blocks");
+	} else {
+		Local<Object> boxes = Nan::New<Array>();
+		for (int i = 0; i < boxad->n; ++i) {
+			boxes->Set(i, createBox(boxad->box[i]));
+		}
+		boxaDestroy(&boxa);
+		info.GetReturnValue().Set(boxes);
+	}
 }
 
 NAN_METHOD(Image::Regions)

@@ -78,13 +78,14 @@ private:
     static NAN_METHOD(FindSkew);
     static NAN_METHOD(ConnectedComponents);
     static NAN_METHOD(SelectBySize);
+    static NAN_METHOD(WhiteBlocks);
     static NAN_METHOD(Regions);
     static NAN_METHOD(DistanceFunction);
     static NAN_METHOD(ClearBox);
     static NAN_METHOD(FillBox);
     static NAN_METHOD(DrawBox);
-    static NAN_METHOD(DrawLine);
     static NAN_METHOD(DrawImage);
+    static NAN_METHOD(DrawLine);
     static NAN_METHOD(ToBuffer);
 
     Image(Pix *pix);
