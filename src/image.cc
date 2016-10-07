@@ -1360,9 +1360,9 @@ NAN_METHOD(Image::WhiteBlocks)
 		Handle<Value> boxesV = opts->Get(String::NewFromUtf8(isolate,"boxes"));
 		Handle<Value> overlapV = opts->Get(String::NewFromUtf8(isolate,"overlap"));
 
-		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32() : maxSize;
-		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32() : maxBoxes;
-		overlap = overlapV->IsNumber() ? overlapV->ToNumber() : overlap;
+		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32()->Value() : maxSize;
+		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32()->Value() : maxBoxes;
+		overlap = overlapV->IsNumber() ? overlapV->ToNumber()->Value() : overlap;
 
 		if (sortSV->IsString()) {
 			String::Utf8Value sortS(sortSV->ToString());
