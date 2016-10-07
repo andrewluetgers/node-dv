@@ -1297,18 +1297,19 @@ NAN_METHOD(Image::WhiteBlocks)
 	int sort = 10;
 
 	if (info[0]->IsObject()) {
+		Isolate* isolate = info.GetIsolate();
 		Handle<Object> opts = Handle<Object>::Cast(info[0]);
-		Handle<Value> maxSizeV = opts->Get(Nan::New("maxSize"));
-		Handle<Value> sortSV = opts->Get(Nan::New("sort"));
-		Handle<Value> boxesV = opts->Get(Nan::New("boxes"));
-		Handle<Value> overlapV = opts->Get(Nan::New("overlap"));
+		Handle<Value> maxSizeV = opts->Get(String::NewFromUtf8(isolate,"maxSize"));
+		Handle<Value> sortSV = opts->Get(String::NewFromUtf8(isolate,"sort"));
+		Handle<Value> boxesV = opts->Get(String::NewFromUtf8(isolate,"boxes"));
+		Handle<Value> overlapV = opts->Get(String::NewFromUtf8(isolate,"overlap"));
 
 		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32() : maxSize;
 		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32() : maxBoxes;
 		overlap = overlapV->IsNumber() ? overlapV->ToNumber() : overlap;
 
 		if (sortSV->IsString()) {
-			String::Utf8Value sortS = sortSV->ToString();
+			String::Utf8Value sortS(sortSV->ToString());
 			if      (strcmp("width",  		*sortS) == 0)     sort = 5;
 			else if (strcmp("height", 		*sortS) == 0)     sort = 6;
 			else if (strcmp("min", 			*sortS) == 0)     sort = 7;
