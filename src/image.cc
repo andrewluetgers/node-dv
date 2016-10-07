@@ -1343,14 +1343,34 @@ NAN_METHOD(Image::SelectBySize)
     }
 }
 
+
+//              box (initial region; typically including all boxes in boxas;
+//                   if null, it computes the region to include all boxes
+//                   in boxas)
+//              sortflag (L_SORT_BY_WIDTH, L_SORT_BY_HEIGHT,
+//                        L_SORT_BY_MIN_DIMENSION, L_SORT_BY_MAX_DIMENSION,
+//                        L_SORT_BY_PERIMETER, L_SORT_BY_AREA)
+//              maxboxes (maximum number of output whitespace boxes; e.g., 100)
+//              maxoverlap (maximum fractional overlap of a box by any
+//                          of the larger boxes; e.g., 0.2)
+//              maxperim (maximum half-perimeter, in pixels, for which
+//                        pivot is selected by proximity to box centroid;
+//                        e.g., 200)
+//              fract (fraction of box diagonal that is an acceptable
+//                     distance from the box centroid to select the pivot;
+//                     e.g., 0.2)
+//              maxpops (maximum number of pops from the heap; use 0 as default)
 NAN_METHOD(Image::WhiteBlocks)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());
 	Pix *pixs = obj->pix_;
     int maxSize = 500;
+	int sort = 10;
     int maxBoxes = 100;
     float overlap = 0.2;
-	int sort = 10;
+	int maxPerim = 200;
+    float fract = 0.2;
+	int maxPops = 0;
 
 	if (info[0]->IsObject()) {
 		Isolate* isolate = info.GetIsolate();
@@ -1359,10 +1379,16 @@ NAN_METHOD(Image::WhiteBlocks)
 		Handle<Value> sortSV = opts->Get(String::NewFromUtf8(isolate,"sort"));
 		Handle<Value> boxesV = opts->Get(String::NewFromUtf8(isolate,"boxes"));
 		Handle<Value> overlapV = opts->Get(String::NewFromUtf8(isolate,"overlap"));
+		Handle<Value> perimV = opts->Get(String::NewFromUtf8(isolate,"perimiter"));
+		Handle<Value> fractV = opts->Get(String::NewFromUtf8(isolate,"fract"));
+		Handle<Value> popsV = opts->Get(String::NewFromUtf8(isolate,"pops"));
 
 		maxSize = maxSizeV->IsInt32() ? maxSizeV->ToInt32()->Value() : maxSize;
 		maxBoxes = boxesV->IsInt32() ? boxesV->ToInt32()->Value() : maxBoxes;
 		overlap = overlapV->IsNumber() ? overlapV->ToNumber()->Value() : overlap;
+		maxPerim = perimV->IsInt32() ? perimV->ToInt32()->Value() : maxPerim;
+		fract = fractV->IsNumber() ? fractV->ToNumber()->Value() : fract;
+		maxPops = popsV->IsInt32() ? popsV->ToInt32()->Value() : maxPops;
 
 		if (sortSV->IsString()) {
 			String::Utf8Value sortS(sortSV->ToString());
@@ -1391,7 +1417,7 @@ NAN_METHOD(Image::WhiteBlocks)
 //		box = boxCreate(0, 0, w, h);
 	boxaPermuteRandom(boxa, boxa);
 	boxat = boxaSelectBySize(boxa, maxSize, maxSize, L_SELECT_IF_BOTH, L_SELECT_IF_LT, NULL);
-	boxad = boxaGetWhiteblocks(boxat, NULL, sort, maxBoxes, overlap, 200, 0.15, 20000);
+	boxad = boxaGetWhiteblocks(boxat, NULL, sort, maxBoxes, overlap, maxPerim, fract, maxPops);
 
 	boxaDestroy(&boxa);
 	boxaDestroy(&boxat);
