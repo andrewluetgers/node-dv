@@ -45,6 +45,7 @@ private:
     static NAN_METHOD(Convolve);
     static NAN_METHOD(Unsharp);
     static NAN_METHOD(SeedFill);
+    static NAN_METHOD(HoleFill);
     static NAN_METHOD(Rotate);
     static NAN_METHOD(Scale);
     static NAN_METHOD(ExpandBinaryPower2);
