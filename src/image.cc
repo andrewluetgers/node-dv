@@ -219,6 +219,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "convolve", Convolve);
     Nan::SetPrototypeMethod(ctor, "unsharp", Unsharp);
     Nan::SetPrototypeMethod(ctor, "seedFill", SeedFill);
+    Nan::SetPrototypeMethod(ctor, "holeFill", HoleFill);
     Nan::SetPrototypeMethod(ctor, "rotate", Rotate);
     Nan::SetPrototypeMethod(ctor, "scale", Scale);
     Nan::SetPrototypeMethod(ctor, "expandBinaryPower2", ExpandBinaryPower2);
@@ -567,8 +568,8 @@ NAN_METHOD(Image::SeedFill)
         Pix *otherPix = Image::Pixels(info[0]->ToObject());
         Pix *pixd;
         int connectivity = info[1]->Int32Value();
-        if(obj->pix_->d >= 8) {
-            return Nan::ThrowTypeError("error while applying seed-fill should be a binary image");
+        if(obj->pix_->d > 1) {
+            return Nan::ThrowTypeError("error while applying seed-fill, should be a binary image");
         } else {
             pixd = pixSeedfillBinary(NULL, obj->pix_, otherPix, connectivity);
         }
@@ -579,6 +580,28 @@ NAN_METHOD(Image::SeedFill)
     } else {
         return Nan::ThrowTypeError("expected (image: Image)");
     }
+}
+
+NAN_METHOD(Image::HoleFill)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
+	Pix *pixd;
+    int connectivity = 4;
+
+    if (info[0]->IsNumber()) {
+    	connectivity = info[0]->Int32Value();
+    }
+
+	if(obj->pix_->d > 1) {
+		return Nan::ThrowTypeError("error while applying hole-fill, should be a binary image");
+	} else {
+		pixd = pixHolesByFilling(obj->pix_, connectivity);
+	}
+	if (pixd == NULL) {
+		return Nan::ThrowTypeError("error while applying seed-fill");
+	}
+	info.GetReturnValue().Set(Image::New(pixd));
+
 }
 
 
