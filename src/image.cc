@@ -1266,6 +1266,36 @@ NAN_METHOD(Image::ConnectedComponents)
     }
 }
 
+NAN_METHOD(Image::ConnectedComponentImages)
+{
+    Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.Holder());
+    if (info[0]->IsInt32()) {
+        int connectivity = info[0]->Int32Value();
+        PIX *pix = obj->pix_;
+        // If image is grayscale, binarize with fixed threshold
+        if (pix->d != 1) {
+ 			return Nan::ThrowTypeError("error while computing connected components");
+		}
+        Pixa *pixa = pixConnCompPixa(pix, connectivity);
+        if (!pixa) {
+            return Nan::ThrowTypeError("error while computing connected components");
+        }
+        Local<Object> images = Nan::New<Array>();
+        Local<Object> boxes = Nan::New<Array>();
+        for (int i = 0; i < pixa->n; ++i) {
+            images->Set(i, Image::New(pixa->pix[i]));
+			boxes->Set(i, createBox(pixa->boxa->box[i]));
+        }
+		Local<Object> object = Nan::New<Object>();
+		object->Set(Nan::New("images").ToLocalChecked(), images);
+		object->Set(Nan::New("boxes").ToLocalChecked(), boxes);
+        pixaDestroy(&pixa);
+		info.GetReturnValue().Set(object);
+    } else {
+        return Nan::ThrowTypeError("expected (connectivity: Int32)");
+    }
+}
+
 NAN_METHOD(Image::SelectBySize)
 {
     Image *obj = Nan::ObjectWrap::Unwrap<Image>(info.This());

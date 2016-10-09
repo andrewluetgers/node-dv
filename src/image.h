@@ -78,6 +78,7 @@ private:
     static NAN_METHOD(LineSegments);
     static NAN_METHOD(FindSkew);
     static NAN_METHOD(ConnectedComponents);
+    static NAN_METHOD(ConnectedComponentImages);
     static NAN_METHOD(SelectBySize);
     static NAN_METHOD(WhiteBlocks);
     static NAN_METHOD(Regions);
