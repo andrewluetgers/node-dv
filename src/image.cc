@@ -254,6 +254,7 @@ NAN_MODULE_INIT(Image::Init)
     Nan::SetPrototypeMethod(ctor, "lineSegments", LineSegments);
     Nan::SetPrototypeMethod(ctor, "findSkew", FindSkew);
     Nan::SetPrototypeMethod(ctor, "connectedComponents", ConnectedComponents);
+    Nan::SetPrototypeMethod(ctor, "connectedComponentImages", ConnectedComponentImages);
     Nan::SetPrototypeMethod(ctor, "selectBySize", SelectBySize);
     Nan::SetPrototypeMethod(ctor, "whiteBlocks", WhiteBlocks);
     Nan::SetPrototypeMethod(ctor, "regions", Regions);
