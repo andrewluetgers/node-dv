@@ -1332,20 +1332,24 @@ NAN_METHOD(Image::ConnectedComponentImages)
         if (pix->d != 1) {
  			return Nan::ThrowTypeError("error while computing connected components");
 		}
-        Pixa *pixa = pixConnCompPixa(pix, connectivity);
-        if (!pixa) {
+		Pixa *pixa = pixaCreate(0);
+        Boxa *boxa = pixConnCompPixa(pix, pixa, connectivity);
+
+        if (!boxa) {
             return Nan::ThrowTypeError("error while computing connected components");
         }
+
         Local<Object> images = Nan::New<Array>();
         Local<Object> boxes = Nan::New<Array>();
         for (int i = 0; i < pixa->n; ++i) {
             images->Set(i, Image::New(pixa->pix[i]));
-			boxes->Set(i, createBox(pixa->boxa->box[i]));
+			boxes->Set(i, createBox(boxa->box[i]));
         }
 		Local<Object> object = Nan::New<Object>();
 		object->Set(Nan::New("images").ToLocalChecked(), images);
 		object->Set(Nan::New("boxes").ToLocalChecked(), boxes);
         pixaDestroy(&pixa);
+        boxaDestroy(&boxa);
 		info.GetReturnValue().Set(object);
     } else {
         return Nan::ThrowTypeError("expected (connectivity: Int32)");
