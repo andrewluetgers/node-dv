@@ -1350,7 +1350,6 @@ NAN_METHOD(Image::ConnectedComponentImages)
 		object->Set(Nan::New("images").ToLocalChecked(), images);
 		object->Set(Nan::New("boxes").ToLocalChecked(), boxes);
         pixaDestroy(&pixa);
-        boxaDestroy(&boxa);
 		info.GetReturnValue().Set(object);
     } else {
         return Nan::ThrowTypeError("expected (connectivity: Int32)");
