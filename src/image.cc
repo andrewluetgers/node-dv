@@ -1333,7 +1333,7 @@ NAN_METHOD(Image::ConnectedComponentImages)
  			return Nan::ThrowTypeError("error while computing connected components");
 		}
 		Pixa *pixa = pixaCreate(0);
-        Boxa *boxa = pixConnCompPixa(pix, pixa, connectivity);
+        Boxa *boxa = pixConnCompPixa(pix, &pixa, connectivity);
 
         if (!boxa) {
             return Nan::ThrowTypeError("error while computing connected components");
