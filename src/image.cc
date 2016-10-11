@@ -1343,6 +1343,7 @@ NAN_METHOD(Image::ConnectedComponentImages)
         Local<Object> images = Nan::New<Array>();
         Local<Object> boxes = Nan::New<Array>();
         for (int i = 0; i < pixa->n; ++i) {
+//        	Pix pix = pixaGetPix(pixa, i, L_CLONE);
             images->Set(i, Image::New(pixa->pix[i]));
 			boxes->Set(i, createBox(boxa->box[i]));
         }
