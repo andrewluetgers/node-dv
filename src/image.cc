@@ -1329,12 +1329,12 @@ NAN_METHOD(Image::ConnectedComponentImages)
     if (info[0]->IsInt32()) {
         int connectivity = info[0]->Int32Value();
         PIX *pix = obj->pix_;
-        // If image is grayscale, binarize with fixed threshold
         if (pix->d != 1) {
  			return Nan::ThrowTypeError("error while computing connected components");
 		}
 		Pixa *pixa = pixaCreate(0);
         Boxa *boxa = pixConnCompPixa(pix, &pixa, connectivity);
+        Pix *pixc;
 
         if (!boxa) {
             return Nan::ThrowTypeError("error while computing connected components");
@@ -1343,14 +1343,16 @@ NAN_METHOD(Image::ConnectedComponentImages)
         Local<Object> images = Nan::New<Array>();
         Local<Object> boxes = Nan::New<Array>();
         for (int i = 0; i < pixa->n; ++i) {
-        	Pix *pix = pixaGetPix(pixa, i, L_CLONE);
-            images->Set(i, Image::New(pix));
+        	pixc = pixaGetPix(pixa, i, L_CLONE);
+            images->Set(i, Image::New(pixc));
 			boxes->Set(i, createBox(boxa->box[i]));
         }
 		Local<Object> object = Nan::New<Object>();
 		object->Set(Nan::New("images").ToLocalChecked(), images);
 		object->Set(Nan::New("boxes").ToLocalChecked(), boxes);
         pixaDestroy(&pixa);
+        boxaDestroy(&boxa);
+        pixDestroy(&pixc);
 		info.GetReturnValue().Set(object);
     } else {
         return Nan::ThrowTypeError("expected (connectivity: Int32)");
